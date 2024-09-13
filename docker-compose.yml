@@ -1,0 +1,39 @@
+version: "3.8"
+
+services:
+  db:
+    image: postgres:latest
+    container_name: postgres_db
+    environment:
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  erp-demo-server:
+    container_name: erp-demo-server
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      DB_URL: postgres_db:5432/${DB_NAME}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+    depends_on:
+      db:
+        condition: service_started
+    ports:
+      - "8080:8080"
+    networks:
+      erp-demo:
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  erp-demo:
+    driver: bridge
